@@ -52,7 +52,7 @@ func (c *CliContext) Refresh() error {
 }
 
 //New Stream for inputData
-func (c *CliContext) NewReader() (io.Reader, error) {
+func (c *CliContext) NewReader() (*bytes.Reader, error) {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return nil, err
 	}
@@ -98,6 +98,11 @@ func (c *CliContext) Output(val ...interface{}) error {
 }
 
 //Output to Writer stream.
+func (c *CliContext) Outputln(val ...interface{}) error {
+	return c.doOutputln(c.Writer, val)
+}
+
+//Output to Writer stream.
 func (c *CliContext) OutputBytes(data []byte) error {
 	writer := bufio.NewWriter(c.Writer)
 	if _, err := writer.Write(data); err != nil {
@@ -112,7 +117,18 @@ func (c *CliContext) OutputErr(val ...interface{}) error {
 }
 
 //Output to ErrorWriter stream.
+func (c *CliContext) OutputErrln(val ...interface{}) error {
+	return c.doOutputln(c.ErrorWriter, val)
+}
+
+//Output to ErrorWriter stream.
 func (c *CliContext) doOutput(writer io.Writer, val []interface{}) error {
 	_, err := fmt.Fprint(writer, val...)
+	return err
+}
+
+//Output to ErrorWriter stream.
+func (c *CliContext) doOutputln(writer io.Writer, val []interface{}) error {
+	_, err := fmt.Fprintln(writer, val...)
 	return err
 }
