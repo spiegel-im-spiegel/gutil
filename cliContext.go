@@ -93,17 +93,26 @@ func (c *CliContext) Data2StringLines() []string {
 }
 
 //Output to Writer stream.
-func (c *CliContext) Output(a ...interface{}) error {
-	return c.doOutput(c.Writer, a)
+func (c *CliContext) Output(val ...interface{}) error {
+	return c.doOutput(c.Writer, val)
+}
+
+//Output to Writer stream.
+func (c *CliContext) OutputBytes(data []byte) error {
+	writer := bufio.NewWriter(c.Writer)
+	if _, err := writer.Write(data); err != nil {
+		return err
+	}
+	return writer.Flush()
 }
 
 //Output to ErrorWriter stream.
-func (c *CliContext) OutputErr(a ...interface{}) error {
-	return c.doOutput(c.ErrorWriter, a)
+func (c *CliContext) OutputErr(val ...interface{}) error {
+	return c.doOutput(c.ErrorWriter, val)
 }
 
 //Output to ErrorWriter stream.
-func (c *CliContext) doOutput(writer io.Writer, a []interface{}) error {
-	_, err := fmt.Fprint(writer, a...)
+func (c *CliContext) doOutput(writer io.Writer, val []interface{}) error {
+	_, err := fmt.Fprint(writer, val...)
 	return err
 }

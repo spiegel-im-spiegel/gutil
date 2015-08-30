@@ -44,6 +44,17 @@ func TestCliContextOutput(t *testing.T) {
 	}
 }
 
+func TestCliContextOutputBytes(t *testing.T) {
+	outBuf := new(bytes.Buffer)
+	cliio := CliContext{Writer: outBuf}
+
+	cliio.OutputBytes([]byte(inputMsg))
+	result := outBuf.String()
+	if result != inputMsg {
+		t.Errorf("CliContext.Output = \"%s\", want \"%s\".", result, inputMsg)
+	}
+}
+
 func TestCliContextOutputErr(t *testing.T) {
 	outBuf := new(bytes.Buffer)
 	cliio := CliContext{ErrorWriter: outBuf}
