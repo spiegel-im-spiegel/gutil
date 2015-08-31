@@ -51,7 +51,7 @@ func (c *CliContext) Refresh() error {
 	return nil
 }
 
-//New Stream for inputData
+//New buffer stream for inputData
 func (c *CliContext) NewReader() (*bytes.Reader, error) {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return nil, err
@@ -59,7 +59,7 @@ func (c *CliContext) NewReader() (*bytes.Reader, error) {
 	return bytes.NewReader(c.inputData), nil
 }
 
-//New Stream for inputData
+//Copy inputData to new []byte
 func (c *CliContext) CopyData() []byte {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return make([]byte, 0)
@@ -71,7 +71,7 @@ func (c *CliContext) CopyData() []byte {
 	return dst
 }
 
-//New Stream for inputData
+//Copy inputData to string
 func (c *CliContext) Data2String() string {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return ""
@@ -79,7 +79,7 @@ func (c *CliContext) Data2String() string {
 	return bytes.NewBuffer(c.inputData).String()
 }
 
-//New Stream for inputData
+//Copy inputData to strings (split by line-ending).
 func (c *CliContext) Data2StringLines() []string {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return []string{}
@@ -97,12 +97,12 @@ func (c *CliContext) Output(val ...interface{}) error {
 	return c.doOutput(c.Writer, val)
 }
 
-//Output to Writer stream.
+//Output to Writer stream (add line-ending).
 func (c *CliContext) Outputln(val ...interface{}) error {
 	return c.doOutputln(c.Writer, val)
 }
 
-//Output to Writer stream.
+//Output to Writer stream ([]byte data).
 func (c *CliContext) OutputBytes(data []byte) error {
 	writer := bufio.NewWriter(c.Writer)
 	if _, err := writer.Write(data); err != nil {
@@ -116,7 +116,7 @@ func (c *CliContext) OutputErr(val ...interface{}) error {
 	return c.doOutput(c.ErrorWriter, val)
 }
 
-//Output to ErrorWriter stream.
+//Output to ErrorWriter stream (add line-ending).
 func (c *CliContext) OutputErrln(val ...interface{}) error {
 	return c.doOutputln(c.ErrorWriter, val)
 }
@@ -127,7 +127,7 @@ func (c *CliContext) doOutput(writer io.Writer, val []interface{}) error {
 	return err
 }
 
-//Output to ErrorWriter stream.
+//Output to ErrorWriter stream (add line-ending).
 func (c *CliContext) doOutputln(writer io.Writer, val []interface{}) error {
 	_, err := fmt.Fprintln(writer, val...)
 	return err
