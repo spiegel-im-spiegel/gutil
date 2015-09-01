@@ -64,6 +64,21 @@ func (c *CliUi) ModeInteract() {
 	}
 }
 
+//Simple prompt
+func (c *CliUi) Prompt(prompt string) (string, error) {
+	if c.mode != UIMODE_INTERACT {
+		return "", ModeErrorInteract
+	}
+	if err := c.OutputErr(prompt); err != nil {
+		return "", err
+	}
+	scanner := bufio.NewScanner(c.Reader)
+	if scanner.Scan() {
+		return scanner.Text(), nil
+	}
+	return "", scanner.Err()
+}
+
 //Reset Reader stream.
 func (c *CliUi) ResetReader(reader io.Reader) {
 	c.refresh = false

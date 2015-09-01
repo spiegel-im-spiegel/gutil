@@ -120,7 +120,7 @@ func TestCliUiRefreshNG(t *testing.T) {
 func TestCliUiNewReader(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, Writer: outBuf}
 
 	buf := new(bytes.Buffer)
 	r, err := cliui.NewReader()
@@ -139,7 +139,7 @@ func TestCliUiNewReader(t *testing.T) {
 func TestCliUiCopyData(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, Writer: outBuf}
 
 	result := bytes.NewBuffer(cliui.CopyData()).String()
 	if result != inputMsg {
@@ -150,7 +150,7 @@ func TestCliUiCopyData(t *testing.T) {
 func TestCliUiData2String(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, Writer: outBuf}
 
 	result := cliui.Data2String()
 	if result != inputMsg {
@@ -161,12 +161,46 @@ func TestCliUiData2String(t *testing.T) {
 func TestCliUiData2StringLines(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, Writer: outBuf}
 
 	lines := cliui.Data2StringLines()
 	result := strings.Join(lines, "\n")
 	if result != inputMsg {
 		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
+	}
+}
+
+func TestCliUiPrompt(t *testing.T) {
+	prompt := "prompt>"
+	inBuf := strings.NewReader(inputMsg)
+	outBuf := new(bytes.Buffer)
+	errBuf := new(bytes.Buffer)
+	cliui := CliUi{Reader: inBuf, Writer: outBuf, ErrorWriter: errBuf}
+	cliui.ModeInteract()
+	result, err := cliui.Prompt(prompt)
+	p := errBuf.String()
+	if err != nil {
+		t.Errorf("CliUi.Prompt() = \"%v\", want nil.", err)
+	} else {
+		if p != prompt {
+			t.Errorf("CliUi.Prompt(): Prompt = \"%v\", want \"%v\".", p, prompt)
+		}
+		if result != inputMsgs[0] {
+			t.Errorf("CliUi.Prompt() = \"%s\", want \"%s\".", result, inputMsgs[0])
+		}
+	}
+}
+
+func TestCliUiPromptNG(t *testing.T) {
+	prompt := "prompt>"
+	inBuf := strings.NewReader(inputMsg)
+	outBuf := new(bytes.Buffer)
+	errBuf := new(bytes.Buffer)
+	cliui := CliUi{Reader: inBuf, Writer: outBuf, ErrorWriter: errBuf}
+	cliui.ModeStream()
+	_, err := cliui.Prompt(prompt)
+	if err == nil {
+		t.Errorf("CliUi.Prompt() = %v, want error.", err)
 	}
 }
 
