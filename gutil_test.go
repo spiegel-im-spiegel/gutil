@@ -42,9 +42,10 @@ func TestMain(m *testing.M) {
 
 func TestCliUiOutput(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Writer: outBuf}
+	cliui := CliUi{}
+	cliui.ResetWriter(outBuf)
 
-	cliio.Output(inputMsg)
+	cliui.Output(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg {
 		t.Errorf("CliUi.Output = \"%s\", want \"%s\".", result, inputMsg)
@@ -53,9 +54,9 @@ func TestCliUiOutput(t *testing.T) {
 
 func TestCliUiOutputln(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Writer: outBuf}
+	cliui := CliUi{Writer: outBuf}
 
-	cliio.Outputln(inputMsg)
+	cliui.Outputln(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg+"\n" {
 		t.Errorf("CliUi.Output = \"%s\", want \"%s\".", result, inputMsg+"\n")
@@ -64,9 +65,9 @@ func TestCliUiOutputln(t *testing.T) {
 
 func TestCliUiOutputBytes(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Writer: outBuf}
+	cliui := CliUi{Writer: outBuf}
 
-	cliio.OutputBytes([]byte(inputMsg))
+	cliui.OutputBytes([]byte(inputMsg))
 	result := outBuf.String()
 	if result != inputMsg {
 		t.Errorf("CliUi.Output = \"%s\", want \"%s\".", result, inputMsg)
@@ -75,9 +76,10 @@ func TestCliUiOutputBytes(t *testing.T) {
 
 func TestCliUiOutputErr(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{ErrorWriter: outBuf}
+	cliui := CliUi{}
+	cliui.ResetErrorWriter(outBuf)
 
-	cliio.OutputErr(inputMsg)
+	cliui.OutputErr(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg {
 		t.Errorf("CliUi.OutputErr = \"%s\", want \"%s\".", result, inputMsg)
@@ -86,9 +88,9 @@ func TestCliUiOutputErr(t *testing.T) {
 
 func TestCliUiOutputErrln(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{ErrorWriter: outBuf}
+	cliui := CliUi{ErrorWriter: outBuf}
 
-	cliio.OutputErrln(inputMsg)
+	cliui.OutputErrln(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg+"\n" {
 		t.Errorf("CliUi.OutputErr = \"%s\", want \"%s\".", result, inputMsg+"\n")
@@ -97,20 +99,31 @@ func TestCliUiOutputErrln(t *testing.T) {
 
 func TestCliUiRefresh(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
-	cliio := CliUi{}
-	cliio.Input(inBuf)
-	if err := cliio.Refresh(); err != nil {
-		t.Errorf("CliUi.Refresh = \"%v\", want nil.", err)
+	cliui := CliUi{}
+	cliui.ResetReader(inBuf)
+	cliui.ModeStream()
+	if err := cliui.Refresh(); err != nil {
+		t.Errorf("CliUi.Refresh() = \"%v\", want nil.", err)
+	}
+}
+
+func TestCliUiRefreshNG(t *testing.T) {
+	inBuf := strings.NewReader(inputMsg)
+	cliui := CliUi{}
+	cliui.ResetReader(inBuf)
+	cliui.ModeInteract()
+	if err := cliui.Refresh(); err != ModeErrorStream {
+		t.Errorf("CliUi.Refresh = error \"%v\", want error \"%v\".", err, ModeErrorStream)
 	}
 }
 
 func TestCliUiNewReader(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
 	buf := new(bytes.Buffer)
-	r, err := cliio.NewReader()
+	r, err := cliui.NewReader()
 	if err != nil {
 		t.Errorf("CliUi.NewReader = \"%v\", want nil.", err)
 	}
@@ -126,9 +139,9 @@ func TestCliUiNewReader(t *testing.T) {
 func TestCliUiCopyData(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
-	result := bytes.NewBuffer(cliio.CopyData()).String()
+	result := bytes.NewBuffer(cliui.CopyData()).String()
 	if result != inputMsg {
 		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
 	}
@@ -137,9 +150,9 @@ func TestCliUiCopyData(t *testing.T) {
 func TestCliUiData2String(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
-	result := cliio.Data2String()
+	result := cliui.Data2String()
 	if result != inputMsg {
 		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
 	}
@@ -148,9 +161,9 @@ func TestCliUiData2String(t *testing.T) {
 func TestCliUiData2StringLines(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
+	cliui := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
-	lines := cliio.Data2StringLines()
+	lines := cliui.Data2StringLines()
 	result := strings.Join(lines, "\n")
 	if result != inputMsg {
 		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)

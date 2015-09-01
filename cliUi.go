@@ -11,13 +11,30 @@ package gutil
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 )
 
+const (
+	//Action mode : Input-Stream Mode
+	UIMODE_STREAM   int = 0
+	//Action mode : Interactive Mode
+	UIMODE_INTERACT int = 1 + iota
+)
+
+//Error; Illedgal Action Mode "This command is not Input-Stream Mode."
+var ModeErrorStream = errors.New("This command is not Input-Stream Mode.")
+
+//Error; Illedgal Action Mode "This command is not Interactive Mode."
+var ModeErrorInteract = errors.New("This command is not Interactive Mode.")
+
 //User-Interface for command-line tools.
 //Reader/Writer assumes standard I/Os.
 type CliUi struct {
+	//Action mode (UIMODE_STREAM / UIMODE_INTERACT)
+	mode int
+
 	//Refresh flag (for Reader stream)
 	refresh bool
 
@@ -32,15 +49,32 @@ type CliUi struct {
 	Writer, ErrorWriter io.Writer
 }
 
+//Set action mode to UIMODE_STREAM
+func (c *CliUi) ModeStream() {
+	if c.mode != UIMODE_STREAM {
+		c.mode = UIMODE_STREAM
+		c.refresh = false
+	}
+}
+
+//Set action mode to UIMODE_INTERACT
+func (c *CliUi) ModeInteract() {
+	if c.mode != UIMODE_INTERACT && c.refresh == false {
+		c.mode = UIMODE_INTERACT
+	}
+}
+
 //Reset Reader stream.
-func (c *CliUi) Input(reader io.Reader) {
+func (c *CliUi) ResetReader(reader io.Reader) {
 	c.refresh = false
 	c.Reader = reader
 }
 
 //Refresh Read buffer
 func (c *CliUi) Refresh() error {
-	if !c.refresh {
+	if c.mode != UIMODE_STREAM {
+		return ModeErrorStream
+	} else if !c.refresh  {
 		c.refresh = true
 		buf := new(bytes.Buffer)
 		if _, err := buf.ReadFrom(c.Reader); err != nil {
@@ -90,6 +124,18 @@ func (c *CliUi) Data2StringLines() []string {
 		lines = append(lines, scanner.Text())
 	}
 	return lines
+}
+
+//Reset Writer stream.
+func (c *CliUi) ResetWriter(writer io.Writer) {
+	c.refresh = false
+	c.Writer = writer
+}
+
+//Reset Writer stream (for Stderr).
+func (c *CliUi) ResetErrorWriter(writer io.Writer) {
+	c.refresh = false
+	c.ErrorWriter = writer
 }
 
 //Output to Writer stream.
