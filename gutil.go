@@ -21,7 +21,7 @@ const (
 
 //LineEnding is function that getting line-ending.
 func LineEnding() string {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" { //maybe Windows, but...
 		return LineEndingWindows
 	} else {
 		return LineEndingNowin
