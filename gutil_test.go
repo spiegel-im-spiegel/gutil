@@ -11,12 +11,14 @@ package gutil
 import (
 	"bytes"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 )
 
 var inputMsgs []string
 var inputMsg string
+var lineEnding string
 
 func TestMain(m *testing.M) {
 	//initialization
@@ -25,6 +27,11 @@ func TestMain(m *testing.M) {
 		"Go言語で行こう！",
 	}
 	inputMsg = strings.Join(inputMsgs, "\n")
+	if runtime.GOOS == "windows" {
+		lineEnding = "\r\n"
+	} else {
+		lineEnding = "\n"
+	}
 
 	//start test
 	code := m.Run()
@@ -33,119 +40,126 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestCliContextOutput(t *testing.T) {
+func TestCliUiOutput(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Writer: outBuf}
+	cliio := CliUi{Writer: outBuf}
 
 	cliio.Output(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg {
-		t.Errorf("CliContext.Output = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.Output = \"%s\", want \"%s\".", result, inputMsg)
 	}
 }
 
-func TestCliContextOutputln(t *testing.T) {
+func TestCliUiOutputln(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Writer: outBuf}
+	cliio := CliUi{Writer: outBuf}
 
 	cliio.Outputln(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg+"\n" {
-		t.Errorf("CliContext.Output = \"%s\", want \"%s\".", result, inputMsg+"\n")
+		t.Errorf("CliUi.Output = \"%s\", want \"%s\".", result, inputMsg+"\n")
 	}
 }
 
-func TestCliContextOutputBytes(t *testing.T) {
+func TestCliUiOutputBytes(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Writer: outBuf}
+	cliio := CliUi{Writer: outBuf}
 
 	cliio.OutputBytes([]byte(inputMsg))
 	result := outBuf.String()
 	if result != inputMsg {
-		t.Errorf("CliContext.Output = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.Output = \"%s\", want \"%s\".", result, inputMsg)
 	}
 }
 
-func TestCliContextOutputErr(t *testing.T) {
+func TestCliUiOutputErr(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{ErrorWriter: outBuf}
+	cliio := CliUi{ErrorWriter: outBuf}
 
 	cliio.OutputErr(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg {
-		t.Errorf("CliContext.OutputErr = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.OutputErr = \"%s\", want \"%s\".", result, inputMsg)
 	}
 }
 
-func TestCliContextOutputErrln(t *testing.T) {
+func TestCliUiOutputErrln(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{ErrorWriter: outBuf}
+	cliio := CliUi{ErrorWriter: outBuf}
 
 	cliio.OutputErrln(inputMsg)
 	result := outBuf.String()
 	if result != inputMsg+"\n" {
-		t.Errorf("CliContext.OutputErr = \"%s\", want \"%s\".", result, inputMsg+"\n")
+		t.Errorf("CliUi.OutputErr = \"%s\", want \"%s\".", result, inputMsg+"\n")
 	}
 }
 
-func TestCliContextRefresh(t *testing.T) {
+func TestCliUiRefresh(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
-	cliio := CliContext{}
+	cliio := CliUi{}
 	cliio.Input(inBuf)
 	if err := cliio.Refresh(); err != nil {
-		t.Errorf("CliContext.Refresh = \"%v\", want nil.", err)
+		t.Errorf("CliUi.Refresh = \"%v\", want nil.", err)
 	}
 }
 
-func TestCliContextNewReader(t *testing.T) {
+func TestCliUiNewReader(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Reader: inBuf, ErrorWriter: outBuf}
+	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
 	buf := new(bytes.Buffer)
 	r, err := cliio.NewReader()
 	if err != nil {
-		t.Errorf("CliContext.NewReader = \"%v\", want nil.", err)
+		t.Errorf("CliUi.NewReader = \"%v\", want nil.", err)
 	}
 	if _, err := buf.ReadFrom(r); err != nil {
-		t.Errorf("CliContext.NewReader = \"%v\", want nil.", err)
+		t.Errorf("CliUi.NewReader = \"%v\", want nil.", err)
 	}
 	result := buf.String()
 	if result != inputMsg {
-		t.Errorf("CliContext.NewReader = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
 	}
 }
 
-func TestCliContextCopyData(t *testing.T) {
+func TestCliUiCopyData(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Reader: inBuf, ErrorWriter: outBuf}
+	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
 	result := bytes.NewBuffer(cliio.CopyData()).String()
 	if result != inputMsg {
-		t.Errorf("CliContext.NewReader = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
 	}
 }
 
-func TestCliContextData2String(t *testing.T) {
+func TestCliUiData2String(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Reader: inBuf, ErrorWriter: outBuf}
+	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
 	result := cliio.Data2String()
 	if result != inputMsg {
-		t.Errorf("CliContext.NewReader = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
 	}
 }
 
-func TestCliContextData2StringLines(t *testing.T) {
+func TestCliUiData2StringLines(t *testing.T) {
 	inBuf := strings.NewReader(inputMsg)
 	outBuf := new(bytes.Buffer)
-	cliio := CliContext{Reader: inBuf, ErrorWriter: outBuf}
+	cliio := CliUi{Reader: inBuf, ErrorWriter: outBuf}
 
 	lines := cliio.Data2StringLines()
 	result := strings.Join(lines, "\n")
 	if result != inputMsg {
-		t.Errorf("CliContext.NewReader = \"%s\", want \"%s\".", result, inputMsg)
+		t.Errorf("CliUi.NewReader = \"%s\", want \"%s\".", result, inputMsg)
+	}
+}
+
+func TestLineEnding(t *testing.T) {
+	result := LineEnding()
+	if result != lineEnding {
+		t.Errorf("LineEnding() = [\"%s\"], want [\"%s\"].", result, lineEnding)
 	}
 }

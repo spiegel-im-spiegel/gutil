@@ -15,9 +15,9 @@ import (
 	"io"
 )
 
-//Context for command-line tools.
+//User-Interface for command-line tools.
 //Reader/Writer assumes standard I/Os.
-type CliContext struct {
+type CliUi struct {
 	//Refresh flag (for Reader stream)
 	refresh bool
 
@@ -33,13 +33,13 @@ type CliContext struct {
 }
 
 //Reset Reader stream.
-func (c *CliContext) Input(reader io.Reader) {
+func (c *CliUi) Input(reader io.Reader) {
 	c.refresh = false
 	c.Reader = reader
 }
 
 //Refresh Read buffer
-func (c *CliContext) Refresh() error {
+func (c *CliUi) Refresh() error {
 	if !c.refresh {
 		c.refresh = true
 		buf := new(bytes.Buffer)
@@ -52,7 +52,7 @@ func (c *CliContext) Refresh() error {
 }
 
 //New buffer stream for inputData
-func (c *CliContext) NewReader() (*bytes.Reader, error) {
+func (c *CliUi) NewReader() (*bytes.Reader, error) {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (c *CliContext) NewReader() (*bytes.Reader, error) {
 }
 
 //Copy inputData to new []byte
-func (c *CliContext) CopyData() []byte {
+func (c *CliUi) CopyData() []byte {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return make([]byte, 0)
 	}
@@ -72,7 +72,7 @@ func (c *CliContext) CopyData() []byte {
 }
 
 //Copy inputData to string
-func (c *CliContext) Data2String() string {
+func (c *CliUi) Data2String() string {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return ""
 	}
@@ -80,7 +80,7 @@ func (c *CliContext) Data2String() string {
 }
 
 //Copy inputData to strings (split by line-ending).
-func (c *CliContext) Data2StringLines() []string {
+func (c *CliUi) Data2StringLines() []string {
 	if err := c.Refresh(); err != nil { //read from Reader, if not read.
 		return []string{}
 	}
@@ -93,17 +93,17 @@ func (c *CliContext) Data2StringLines() []string {
 }
 
 //Output to Writer stream.
-func (c *CliContext) Output(val ...interface{}) error {
+func (c *CliUi) Output(val ...interface{}) error {
 	return c.doOutput(c.Writer, val)
 }
 
 //Output to Writer stream (add line-ending).
-func (c *CliContext) Outputln(val ...interface{}) error {
+func (c *CliUi) Outputln(val ...interface{}) error {
 	return c.doOutputln(c.Writer, val)
 }
 
 //Output to Writer stream ([]byte data).
-func (c *CliContext) OutputBytes(data []byte) error {
+func (c *CliUi) OutputBytes(data []byte) error {
 	writer := bufio.NewWriter(c.Writer)
 	if _, err := writer.Write(data); err != nil {
 		return err
@@ -112,23 +112,23 @@ func (c *CliContext) OutputBytes(data []byte) error {
 }
 
 //Output to ErrorWriter stream.
-func (c *CliContext) OutputErr(val ...interface{}) error {
+func (c *CliUi) OutputErr(val ...interface{}) error {
 	return c.doOutput(c.ErrorWriter, val)
 }
 
 //Output to ErrorWriter stream (add line-ending).
-func (c *CliContext) OutputErrln(val ...interface{}) error {
+func (c *CliUi) OutputErrln(val ...interface{}) error {
 	return c.doOutputln(c.ErrorWriter, val)
 }
 
 //Output to ErrorWriter stream.
-func (c *CliContext) doOutput(writer io.Writer, val []interface{}) error {
+func (c *CliUi) doOutput(writer io.Writer, val []interface{}) error {
 	_, err := fmt.Fprint(writer, val...)
 	return err
 }
 
 //Output to ErrorWriter stream (add line-ending).
-func (c *CliContext) doOutputln(writer io.Writer, val []interface{}) error {
+func (c *CliUi) doOutputln(writer io.Writer, val []interface{}) error {
 	_, err := fmt.Fprintln(writer, val...)
 	return err
 }
